@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CraftHaven Comforts - Premium Furniture Sandbox</title>
+    <style>
+        :root {
+            --primary: #7c2d12;       /* Deep Wood Brown */
+            --primary-hover: #9a3412; /* Warm Mahogany */
+            --accent: #065f46;        /* Elegant Forest Green */
+            --bg-color: #fafaf9;      /* Soft Stone White */
+            --card-bg: #ffffff;
+            --text-main: #1c1917;
+            --text-muted: #78716c;
+            --border-color: #e7e5e4;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: var(--bg-color); color: var(--text-main); padding-bottom: 60px; }
+
+        /* Navigation */
+        header { background-color: var(--card-bg); box-shadow: 0 2px 4px rgba(0,0,0,0.03); position: sticky; top: 0; z-index: 100; }
+        .nav-container { max-width: 1200px; margin: 0 auto; padding: 18px 20px; display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-size: 24px; font-weight: 700; color: var(--primary); cursor: pointer; letter-spacing: -0.5px; }
+        nav a { text-decoration: none; color: var(--text-main); font-weight: 500; margin-left: 25px; cursor: pointer; transition: color 0.2s; }
+        nav a:hover { color: var(--primary); }
+        .cart-link { position: relative; }
+        .cart-badge { position: absolute; top: -10px; right: -15px; background-color: #ef4444; color: white; font-size: 11px; border-radius: 50%; width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+
+        /* Main Container */
+        .container { max-width: 1200px; margin: 30px auto; padding: 0 20px; }
+        
+        /* Hero Banner */
+        .hero { background: linear-gradient(135deg, #441507 0%, #1c0a05 100%); color: #f5f5f4; padding: 50px 40px; border-radius: 16px; margin-bottom: 35px; text-align: center; }
+        .hero h2 { font-size: 32px; margin-bottom: 10px; font-weight: 600; }
+        .hero p { color: #d6d3d1; font-size: 16px; }
+
+        /* Category Filter Bar */
+        .filter-container { display: flex; gap: 10px; overflow-x: auto; margin-bottom: 30px; padding-bottom: 5px; }
+        .filter-container::-webkit-scrollbar { height: 5px; }
+        .filter-container::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 10px; }
+        .filter-btn { background-color: var(--card-bg); border: 1px solid var(--border-color); padding: 10px 20px; border-radius: 25px; cursor: pointer; font-weight: 500; white-space: nowrap; transition: all 0.2s; color: var(--text-muted); }
+        .filter-btn:hover { border-color: var(--primary); color: var(--primary); }
+        .filter-btn.active { background-color: var(--primary); color: white; border-color: var(--primary); }
+
+        /* Product Grid */
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 30px; }
+        .product-card { background-color: var(--card-bg); border-radius: 14px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.02); display: flex; flex-direction: column; transition: transform 0.2s, box-shadow 0.2s; border: 1px solid var(--border-color); }
+        .product-card:hover { transform: translateY(-4px); box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
+        .product-img { width: 100%; height: 220px; object-fit: cover; background-color: #eae6e3; }
+        .product-info { padding: 20px; display: flex; flex-direction: column; flex-grow: 1; }
+        .product-cat { font-size: 11px; font-weight: 700; color: var(--primary); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .product-title { font-size: 16px; font-weight: 600; margin-bottom: 12px; cursor: pointer; line-height: 1.4; }
+        .product-title:hover { color: var(--primary); }
+        .product-meta { display: flex; justify-content: space-between; align-items: center; margin-top: auto; }
+        .product-price { font-size: 18px; font-weight: 700; color: var(--text-main); }
+        
+        /* Buttons */
+        .btn { background-color: var(--primary); color: white; border: none; padding: 10px 18px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: background 0.2s; font-size: 14px; }
+        .btn:hover { background-color: var(--primary-hover); }
+        .btn-success { background-color: var(--accent); }
+        .btn-success:hover { background-color: #044e39; }
+
+        /* SPA Pages visibility */
+        .page { display: none; }
+        .page.active { display: block; }
+
+        /* Product Details Page */
+        .detail-wrapper { background-color: var(--card-bg); padding: 40px; border-radius: 16px; display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 40px; border: 1px solid var(--border-color); }
+        .detail-img { width: 100%; max-height: 450px; object-fit: cover; border-radius: 12px; background-color: #eae6e3; }
+        .back-btn { display: inline-block; margin-bottom: 20px; color: var(--primary); font-weight: 600; cursor: pointer; text-decoration: none; }
+        .back-btn:hover { text-decoration: underline; }
+
+        /* Cart Page */
+        .cart-wrapper { background-color: var(--card-bg); padding: 40px; border-radius: 16px; border: 1px solid var(--border-color); }
+        .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 20px 0; border-bottom: 1px solid var(--border-color); }
+        .cart-item:last-child { border-bottom: none; }
+        .cart-item-info { display: flex; align-items: center; gap: 20px; }
+        .cart-item-img { width: 70px; height: 70px; object-fit: cover; border-radius: 8px; background-color: #eae6e3; }
+        .remove-btn { color: #dc2626; background: none; border: none; cursor: pointer; font-weight: 500; font-size: 14px; }
+        .remove-btn:hover { text-decoration: underline; }
+        .cart-total-section { text-align: right; margin-top: 30px; padding-top: 20px; border-top: 2px solid var(--border-color); }
+        .total-price { font-size: 26px; font-weight: 700; margin-bottom: 15px; }
+
+        /* Order Success Page */
+        .success-box { background-color: var(--card-bg); padding: 60px; text-align: center; border-radius: 16px; border: 1px solid var(--border-color); max-width: 600px; margin: 40px auto; }
+        .success-icon { font-size: 64px; color: var(--accent); margin-bottom: 20px; }
+        .success-box h2 { font-size: 28px; margin-bottom: 10px; }
+        .success-box p { color: var(--text-muted); margin-bottom: 30px; }
+    </style>
+</head>
+<body>
+
+    <!-- Header Navigation -->
+    <header>
+        <div class="nav-container">
+            <div class="logo" onclick="navigateTo('home-page')">🪑 CraftHaven</div>
+            <nav>
+                <a onclick="navigateTo('home-page')">Collection</a>
+                <a onclick="openCart()" class="cart-link">Cart 🛒 <span id="cart-badge" class="cart-badge">0</span></a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Dynamic Content Container -->
+    <div class="container">
+        
+        <!-- PAGE 1: HOME (CATALOG) -->
+        <section id="home-page" class="page active">
+            <div class="hero">
+                <h2>Exquisite Wooden Furniture Collection</h2>
+                <p>অ্যানালিটিক্স ডাটা লেয়ার এবং ই-কমার্স ট্র্যাকিং নিখুঁতভাবে টেস্ট করার জন্য ৫২টি লাক্সারি প্রোডাক্ট প্রজেক্ট।</p>
+            </div>
+            <div class="filter-container" id="filter-bar"></div>
+            <div class="grid" id="product-grid"></div>
+        </section>
+
+        <!-- PAGE 2: PRODUCT DETAIL -->
+        <section id="detail-page" class="page">
+            <span class="back-btn" onclick="navigateTo('home-page')">&larr; Back to Collection</span>
+            <div class="detail-wrapper" id="detail-content"></div>
+        </section>
+
+        <!-- PAGE 3: CART OVERVIEW -->
+        <section id="cart-page" class="page">
+            <div class="cart-wrapper">
+                <h2 style="margin-bottom: 20px;">Shopping Cart Summary</h2>
+                <div id="cart-items-container"></div>
+                <div class="cart-total-section">
+                    <div class="total-price">Estimated Total: $<span id="total-amount">0</span></div>
+                    <button class="btn btn-success" style="padding: 12px 30px; font-size: 16px;" onclick="processCheckout()">Confirm Order / Checkout</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- PAGE 4: SUCCESS THANK YOU -->
+        <section id="success-page" class="page">
+            <div class="success-box">
+                <div class="success-icon">✓</div>
+                <h2>Order Successfully Placed!</h2>
+                <p>ধন্যবাদ! আপনার ফেক ট্রানজেকশনটি সম্পূর্ণ হয়েছে এবং GA4 স্ট্যান্ডার্ডে পারচেজ ইভেন্ট ফায়ার করা হয়েছে।</p>
+                <button class="btn" onclick="navigateTo('home-page')">Return to Catalog</button>
+            </div>
+        </section>
+    </div>
+
+    <!-- Analytics Engine & Dynamic Logic Script -->
+    <script>
+        // Furniture Categories (8 Categories)
+        const categories = ["Living Room", "Bedroom", "Dining Room", "Office", "Outdoor", "Kitchen", "Kids Furniture", "Hallway"];
+
+        // Unsplash Images Architecture focused on High-End Wood Furniture
+        const imagePools = {
+            "Living Room": [
+                "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=600&auto=format&fit=crop&q=60",
+                "https://images.unsplash.com/photo-1493663284031-b7e3aefcae8e?w=600&auto=format&fit=crop&q=60"
+            ],
+            "Bedroom": [
+                "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?w=600&auto=format&fit=crop&q=60",
+                "https://images.unsplash.com/photo-1540518614846-7eded433c457?w=600&auto=format&fit=crop&q=60"
+            ],
+            "Dining Room": [
+                "https://images.unsplash.com/photo-1615066390971-03e4e1c36ddf?w=600&auto=format&fit=crop&q=60",
+                "https://images.unsplash.com/photo-1577140917170-285929fb55b7?w=600&auto=format&fit=crop&q=60"
+            ],
+            "Office": [
+                "https://images.unsplash.com/photo-1524758631624-e2822e304c36?w=600&auto=format&fit=crop&q=60",
+                "https://images.unsplash.com/photo-1595515106969-1ce29566ff1c?w=600&auto=format&fit=crop&q=60"
+            ],
+            "Outdoor": [
+                "https://images.unsplash.com/photo-1604014237800-1c9102c219da?w=600&auto=format&fit=crop&q=60",
+                "https://images.unsplash.com/photo-1560185007-c5ca9d2c014d?w=600&auto=format&fit=crop&q=60"
+            ],
+            "Kitchen": [
+                "https://images.unsplash.com/photo-1556911220-e15b29be8c8f?w=600&auto=format&fit=crop&q=60",
+                "https://images.unsplash.com/photo-1565183997392-2f6f122e5912?w=600&auto=format&fit=crop&q=60"
+            ],
+            "Kids Furniture": [
+                "https://images.unsplash.com/photo-1531835551805-16d864c8d311?w=600&auto=format&fit=crop&q=60"
+            ],
+            "Hallway": [
+                "https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?w=600&auto=format&fit=crop&q=60"
+            ]
+        };
+
+        const namesTemplate = {
+            "Living Room": ["Luxury Fabric Sofa", "Minimalist Coffee Table", "Wooden Lounge Chair", "Premium TV Cabinet"],
+            "Bedroom": ["Solid Oak King Bed", "Modern Nightstand", "3-Door Wardrobe", "Classic Dressing Table"],
+            "Dining Room": ["6-Seater Dining Table", "Upholstered Dining Chair", "Wooden Sideboard Buffet", "Mini Wine Rack"],
+            "Office": ["Ergonomic Executive Desk", "Adjustable Office Chair", "Tall Bookcase", "File Storage Cabinet"],
+            "Outdoor": ["Teak Wood Patio Set", "Garden Rattan Lounger", "Porch Swing Chair", "Outdoor Coffee Table"],
+            "Kitchen": ["Mobile Kitchen Island", "High-Back Bar Stool", "Wooden Pantry Cupboard", "Wall-Mounted Spice Rack"],
+            "Kids Furniture": ["Convertible Bunk Bed", "Study Desk with Shelves", "Toy Storage Chest"],
+            "Hallway": ["Console Display Table", "Shoe Storage Bench", "Wall Coat Hanger Table"]
+        };
+
+        // Generate Exactly 52 Premium Unique Furniture Products
+        const products = [];
+        for (let i = 1; i <= 52; i++) {
+            let cat = categories[(i - 1) % categories.length];
+            let imgList = imagePools[cat];
+            let img = imgList[(i - 1) % imgList.length];
+            let baseNameList = namesTemplate[cat];
+            let baseName = baseNameList[(i - 1) % baseNameList.length];
+            
+            products.push({
+                id: `furn_${100 + i}`,
+                name: `${baseName} (Premium Ref-${i})`,
+                price: 149 + ((i * 29) % 850), // Realistic premium price matrix range: $149 - $999
+                category: cat,
+                img: img
+            });
+        }
+
+        let cart = [];
+        let currentFilter = "All";
+
+        // Global Google Analytics 4 eCommerce Standard Data Layer Engine
+        function trackAnalyticsEvent(eventName, eventData) {
+            window.dataLayer = window.dataLayer || [];
+            window.dataLayer.push({
+                event: eventName,
+                ecommerce: eventData
+            });
+            // You can view this print live in your Browser Inspect Developer Console Tab
+            console.log(`📊 [DataLayer Push: ${eventName}]`, window.dataLayer[window.dataLayer.length - 1]);
+        }
+
+        // Single Page Application Router Simulation
+        function navigateTo(pageId) {
+            document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+            window.scrollTo({top: 0, behavior: 'smooth'});
+            
+            trackAnalyticsEvent('page_view', { page_title: pageId, page_location: window.location.href });
+        }
+
+        // Initialize Catalog UI
+        function initShop() {
+            // Render Category Filter Controls
+            const filterBar = document.getElementById('filter-bar');
+            filterBar.innerHTML = ["All", ...categories].map(cat => `
+                <button class="filter-btn ${currentFilter === cat ? 'active' : ''}" onclick="applyFilter('${cat}')">${cat}</button>
+            `).join('');
+
+            // Render Product Grid based on filter selection
+            const grid = document.getElementById('product-grid');
+            const filtered = currentFilter === "All" ? products : products.filter(p => p.category === currentFilter);
+            
+            grid.innerHTML = filtered.map(prod => `
+                <div class="product-card">
+                    <img src="${prod.img}" alt="${prod.name}" class="product-img" onclick="viewProductDetails('${prod.id}')" style="cursor:pointer;" loading="lazy">
+                    <div class="product-info">
+                        <span class="product-cat">${prod.category}</span>
+                        <h3 class="product-title" onclick="viewProductDetails('${prod.id}')">${prod.name}</h3>
+                        <div class="product-meta">
+                            <span class="product-price">$${prod.price}</span>
+                            <button class="btn" onclick="addToCart('${prod.id}')">Add to Cart</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            // Fire standard GA4 item list observation trigger
+            trackAnalyticsEvent('view_item_list', {
+                item_list_name: currentFilter,
+                items: filtered.slice(0, 10).map((p, index) => ({
+                    item_id: p.id,
+                    item_name: p.name,
+                    index: index + 1,
+                    item_category: p.category,
+                    price: p.price
+                }))
+            });
+        }
+
+        function applyFilter(cat) {
+            currentFilter = cat;
+            initShop();
+        }
+
+        // SPA Deep View Page Logic
+        function viewProductDetails(id) {
+            const prod = products.find(p => p.id === id);
+            document.getElementById('detail-content').innerHTML = `
+                <img src="${prod.img}" class="detail-img" alt="${prod.name}">
+                <div>
+                    <span class="product-cat">${prod.category}</span>
+                    <h1 style="margin:12px 0 18px 0; font-size:32px; font-weight:600; line-height:1.2;">${prod.name}</h1>
+                    <p style="color:var(--text-muted); margin-bottom:30px; line-height:1.6; font-size:15px;">
+                        Crafted from selected high-grade sustainable materials. Designed for absolute durability, elegance, and premium spatial comfort. Perfect sandbox item for production tracking architecture analytics layer validation rules.
+                    </p>
+                    <div style="display:flex; align-items:center; gap:25px; border-top:1px solid var(--border-color); padding-top:25px;">
+                        <span style="font-size:32px; font-weight:800; color:var(--text-main);">$${prod.price}</span>
+                        <button class="btn" style="padding:12px 28px; font-size:15px;" onclick="addToCart('${prod.id}')">Add To Shopping Cart</button>
+                    </div>
+                </div>
+            `;
+            navigateTo('detail-page');
+            
+            trackAnalyticsEvent('view_item', {
+                value: prod.price,
+                currency: "USD",
+                items: [{ item_id: prod.id, item_name: prod.name, item_category: prod.category, price: prod.price, quantity: 1 }]
+            });
+        }
+
+        // Cart State Modifiers
+        function addToCart(id) {
+            const prod = products.find(p => p.id === id);
+            cart.push(prod);
+            document.getElementById('cart-badge').innerText = cart.length;
+            
+            trackAnalyticsEvent('add_to_cart', {
+                value: prod.price,
+                currency: "USD",
+                items: [{ item_id: prod.id, item_name: prod.name, item_category: prod.category, price: prod.price, quantity: 1 }]
+            });
+        }
+
+        function openCart() {
+            navigateTo('cart-page');
+            const container = document.getElementById('cart-items-container');
+            
+            if(cart.length === 0) {
+                container.innerHTML = `<p style="color:var(--text-muted); padding:40px 0; text-align:center;">Your shopping cart is currently empty.</p>`;
+                document.getElementById('total-amount').innerText = "0";
+                return;
+            }
+            
+            let total = cart.reduce((sum, item) => sum + item.price, 0);
+            container.innerHTML = cart.map((item, idx) => `
+                <div class="cart-item">
+                    <div class="cart-item-info">
+                        <img src="${item.img}" class="cart-item-img" alt="${item.name}">
+                        <div>
+                            <h4 style="font-size:16px; font-weight:600; margin-bottom:4px;">${item.name}</h4>
+                            <span style="color:var(--text-muted); font-size:14px; font-weight:600;">$${item.price}</span>
+                        </div>
+                    </div>
+                    <button class="remove-btn" onclick="removeFromCart(${idx})">Remove Item</button>
+                </div>
+            `).join('');
+            
+            document.getElementById('total-amount').innerText = total;
+
+            trackAnalyticsEvent('view_cart', {
+                value: total,
+                currency: "USD",
+                items: cart.map(i => ({ item_id: i.id, item_name: i.name, item_category: i.category, price: i.price }))
+            });
+        }
+
+        function removeFromCart(idx) {
+            const removedItem = cart[idx];
+            cart.splice(idx, 1);
+            document.getElementById('cart-badge').innerText = cart.length;
+            
+            trackAnalyticsEvent('remove_from_cart', {
+                value: removedItem.price,
+                currency: "USD",
+                items: [{ item_id: removedItem.id, item_name: removedItem.name, item_category: removedItem.category, price: removedItem.price }]
+            });
+            
+            openCart();
+        }
+
+        // Checkout Simulation
+        function processCheckout() {
+            if (cart.length === 0) return alert("Your cart is empty!");
+            
+            const total = cart.reduce((sum, item) => sum + item.price, 0);
+            const generatedFakeTrxId = "CH-" + Math.floor(100000 + Math.random() * 900000);
+            
+            trackAnalyticsEvent('purchase', {
+                transaction_id: generatedFakeTrxId,
+                value: total,
+                currency: "USD",
+                shipping: 0,
+                tax: 0,
+                items: cart.map(i => ({ item_id: i.id, item_name: i.name, item_category: i.category, price: i.price, quantity: 1 }))
+            });
+
+            // Flush cart data upon confirmation
+            cart = [];
+            document.getElementById('cart-badge').innerText = "0";
+            navigateTo('success-page');
+        }
+
+        // Initialize App UI
+        window.onload = initShop;
+    </script>
+</body>
+</html>
